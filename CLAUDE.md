@@ -1,5 +1,59 @@
 # CLAUDE.md — JF Visionary Media Repository
 
+## TRIGGER INSTRUCTION — READ THIS FIRST
+
+When the user pastes the Morning Brief description (any message containing the
+phrases "automated Morning Brief", "6 AM EST", "generate.py", or
+"jfvisionarymedia@gmail.com"), that is a **deploy trigger**. Immediately execute
+the following sequence without asking for confirmation:
+
+### Deploy Sequence (run every time the trigger is pasted)
+
+1. **Read current state**
+   - Read `morning-brief/generate.py`
+   - Read `.github/workflows/morning-brief.yml`
+   - Read `morning-brief/requirements.txt`
+   - Run `git log --oneline -6` and `git branch -a`
+
+2. **Validate generate.py contains ALL of the following — fix anything missing or broken:**
+   - `get_weather()` → `https://wttr.in/Toronto,Ontario?format=j1`
+   - `get_bitcoin()` → CoinGecko `/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`
+   - `get_stocks()` → yfinance tickers: `IYF`, `VOO`, `CL=F` (WTI Crude Oil)
+   - `get_news()` → 4 categories: Global Politics, Business & Finance, Artificial Intelligence, Technology — BBC + Reuters RSS feeds
+   - `get_quote()` → `https://zenquotes.io/api/today`
+   - `build_pdf()` → reportlab PDF with: header ("Good Morning, Jack"), weather table, Bitcoin table, ETFs/Commodities table (colour-coded change %), headlines (4 categories × up to 4 items), closing quote
+   - `send_email()` → Gmail SMTP on port 465, `GMAIL_ADDRESS` + `GMAIL_APP_PASSWORD` from env, attaches PDF, sends to `jfvisionarymedia@gmail.com`
+   - `main()` → calls all of the above in order
+
+3. **Validate the workflow file contains ALL of the following — fix anything missing:**
+   - `cron: "0 11 * * *"` (06:00 EST = 11:00 UTC)
+   - `workflow_dispatch:` (manual trigger)
+   - `python-version: "3.12"`
+   - `pip install -r morning-brief/requirements.txt`
+   - `GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}`
+   - `GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}`
+   - `python morning-brief/generate.py`
+
+4. **Validate requirements.txt contains:** `feedparser>=6.0.10`, `reportlab>=4.0.0`, `requests>=2.31.0`, `yfinance>=0.2.36`
+
+5. **Apply any fixes found in steps 2–4** — edit the files, commit on the current feature branch
+
+6. **Merge feature branch to main and push:**
+   ```
+   git checkout main
+   git merge <feature-branch> --no-edit
+   git push -u origin main
+   ```
+
+7. **Switch back to the feature branch:**
+   ```
+   git checkout <feature-branch>
+   ```
+
+8. **Report to user:** confirm all checks passed (or list what was fixed), confirm push to main succeeded, remind user to trigger a manual test run via GitHub → Actions → Morning Brief → Run workflow.
+
+---
+
 ## What This Repo Does
 
 Runs a fully automated **Morning Brief** every day at 6:00 AM EST via GitHub Actions.
