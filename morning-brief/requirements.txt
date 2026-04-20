@@ -1,2 +1,4 @@
-anthropic>=0.40.0
-weasyprint>=62.0
+feedparser>=6.0.10
+reportlab>=4.0.0
+requests>=2.31.0
+yfinance>=0.2.36
