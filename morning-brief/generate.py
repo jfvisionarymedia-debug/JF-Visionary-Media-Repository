@@ -3,6 +3,7 @@ Morning Brief — collects weather, markets, news, and a quote from free public
 APIs (no API keys required), builds a PDF with reportlab, emails it via Gmail.
 """
 
+import html
 import os
 import re
 import smtplib
@@ -289,7 +290,7 @@ def build_pdf(
         story.append(Paragraph("Bitcoin data unavailable.", BODY))
 
     # ETF / Commodity table
-    story.append(Paragraph("ETFs & Commodities", SUBSEC))
+    story.append(Paragraph("ETFs and Commodities", SUBSEC))
     header_row = [["Asset", "Symbol", "Price", "Prev Close", "Change"]]
     data_rows = []
     change_colors: dict[int, colors.Color] = {}
@@ -300,14 +301,13 @@ def build_pdf(
             prev_str  = f"${info['prev_close']:.2f}" if info["prev_close"] else "N/A"
             if info["change_pct"] is not None:
                 chg = info["change_pct"]
-                arrow = "▲" if chg >= 0 else "▼"
-                chg_str = f"{arrow} {chg:+.2f}%"
+                chg_str = f"{chg:+.2f}%"
                 change_colors[i] = GREEN if chg >= 0 else RED
             else:
                 chg_str = "N/A"
             data_rows.append([label, info["symbol"], price_str, prev_str, chg_str])
         else:
-            data_rows.append([label, "—", "N/A", "N/A", "N/A"])
+            data_rows.append([label, "-", "N/A", "N/A", "N/A"])
 
     col_w = [1.9 * inch, 1.0 * inch, 1.1 * inch, 1.1 * inch, 1.1 * inch]
     tbl = Table(header_row + data_rows, colWidths=col_w)
@@ -333,12 +333,12 @@ def build_pdf(
     # News
     story.append(Paragraph("Top Headlines", SECTION))
     for category, items in news.items():
-        story.append(Paragraph(category, SUBSEC))
+        story.append(Paragraph(html.escape(category), SUBSEC))
         if items:
             for item in items:
-                story.append(Paragraph(f"\u2022\u2002{item['title']}", HEADLINE))
+                story.append(Paragraph(f"* {html.escape(item['title'])}", HEADLINE))
                 if item["summary"]:
-                    story.append(Paragraph(item["summary"], BODY))
+                    story.append(Paragraph(html.escape(item["summary"]), BODY))
                 story.append(sp(0.04))
         else:
             story.append(Paragraph("No headlines available.", BODY))
@@ -349,8 +349,8 @@ def build_pdf(
     story += [
         Paragraph("Closing Thought", SECTION),
         sp(0.05),
-        Paragraph(f"\u201c{quote['quote']}\u201d", QTEXT),
-        Paragraph(f"\u2014 {quote['author']}", QAUTHOR),
+        Paragraph(f'"{html.escape(quote["quote"])}"', QTEXT),
+        Paragraph(f"- {html.escape(quote['author'])}", QAUTHOR),
     ]
 
     doc.build(story)
