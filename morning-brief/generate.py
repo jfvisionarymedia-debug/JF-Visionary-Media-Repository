@@ -29,7 +29,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-RECIPIENT = "jf@jfvisionarymedia.com"
+RECIPIENT = "jfvisionarymedia@gmail.com"
 
 NAVY = colors.HexColor("#1a1a2e")
 CHARCOAL = colors.HexColor("#2c2c54")
