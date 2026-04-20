@@ -1,0 +1,38 @@
+name: Jack's Morning Brief
+
+on:
+  schedule:
+    # 6:00 AM EDT (UTC-4, Apr–Nov). Change to "0 11 * * *" in winter (EST).
+    - cron: "0 10 * * *"
+  workflow_dispatch: # allow manual runs from GitHub Actions tab
+
+jobs:
+  morning-brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies (for weasyprint)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 libcairo2 libgdk-pixbuf2.0-0 libffi-dev
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: morning-brief/requirements.txt
+
+      - name: Install Python dependencies
+        run: pip install -r morning-brief/requirements.txt
+
+      - name: Run morning brief
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python morning-brief/generate.py
