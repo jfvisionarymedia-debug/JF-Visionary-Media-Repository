@@ -405,7 +405,8 @@ def main() -> None:
 
     print("[2/5] Bitcoin...")
     bitcoin = get_bitcoin()
-    print(f"      {'OK — $' + f\"{bitcoin['price']:,.0f}\" if bitcoin else 'unavailable'}")
+    btc_status = f"OK — ${bitcoin['price']:,.0f}" if bitcoin else "unavailable"
+    print(f"      {btc_status}")
 
     print("[3/5] Stocks/ETFs...")
     stocks = get_stocks()
